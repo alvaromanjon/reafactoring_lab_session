@@ -172,17 +172,7 @@ which should be treated by all nodes.
 		Node currentNode = firstNode_;
 		Packet packet = new Packet("BROADCAST", firstNode_.name_, firstNode_.name_);
 		do {
-			try {
-				report.write("\tNode '");
-				report.write(currentNode.name_);
-				report.write("' accepts broadcase packet.\n");
-				report.write("\tNode '");
-				report.write(currentNode.name_);
-				report.write("' passes packet on.\n");
-				report.flush();
-			} catch (IOException exc) {
-				// just ignore
-			};
+			logging(report, currentNode);
 			currentNode = currentNode.nextNode_;
 		} while (! packet.destination_.equals(currentNode.name_));
 
@@ -192,7 +182,41 @@ which should be treated by all nodes.
 			// just ignore
 		};
 		return true;
-	}    
+	}
+	
+	
+	
+	private void logging(Writer report, Node currentNode) {
+		try {
+			report.write("\tNode '");
+			report.write(currentNode.name_);
+			report.write("' accepts broadcase packet.\n");
+			report.write("\tNode '");
+			report.write(currentNode.name_);
+			report.write("' passes packet on.\n");
+			report.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+		};
+		
+		
+	}
+	
+	private void logging(Writer report, String workstation, String document, String printer) {
+		try {
+			report.write("'");
+			report.write(workstation);
+			report.write("' requests printing of '");
+			report.write(document);
+			report.write("' on '");
+			report.write(printer);
+			report.write("' ...\n");
+		} catch (IOException exc) {
+			// just ignore
+		};
+	}
+	
 
 	/**
 The #receiver is requested by #workstation to print #document on #printer.
@@ -209,43 +233,19 @@ Therefore #receiver sends a packet across the token ring network, until either
 			String printer, Writer report) {
 		assert consistentNetwork() & hasWorkstation(workstation);
 
-		try {
-			report.write("'");
-			report.write(workstation);
-			report.write("' requests printing of '");
-			report.write(document);
-			report.write("' on '");
-			report.write(printer);
-			report.write("' ...\n");
-		} catch (IOException exc) {
-			// just ignore
-		};
-
+		logging(report, workstation, document, printer);
+		
 		boolean result = false;
 		Node startNode, currentNode;
 		Packet packet = new Packet(document, workstation, printer);
 
 		startNode = (Node) workstations_.get(workstation);
 
-		try {
-			report.write("\tNode '");
-			report.write(startNode.name_);
-			report.write("' passes packet on.\n");
-			report.flush();
-		} catch (IOException exc) {
-			// just ignore
-		};
+		logging(report, startNode);
 		currentNode = startNode.nextNode_;
 		while ((! packet.destination_.equals(currentNode.name_))
 				& (! packet.origin_.equals(currentNode.name_))) {
-			try {
-				report.write("\tNode '");
-				report.write(currentNode.name_);
-				report.write("' passes packet on.\n");
-				report.flush();
-			} catch (IOException exc) {
-				// just ignore
-			};
+			logging(report, currentNode);
 			currentNode = currentNode.nextNode_;
 		};
 
@@ -272,23 +272,7 @@ Therefore #receiver sends a packet across the token ring network, until either
 		if (printer.type_ == Node.PRINTER) {
 			try {
 				if (document.message_.startsWith("!PS")) {
-					startPos = document.message_.indexOf("author:");
-					if (startPos >= 0) {
-						endPos = document.message_.indexOf(".", startPos + 7);
-						if (endPos < 0) {endPos = document.message_.length();};
-						author = document.message_.substring(startPos + 7, endPos);};
-						startPos = document.message_.indexOf("title:");
-						if (startPos >= 0) {
-							endPos = document.message_.indexOf(".", startPos + 6);
-							if (endPos < 0) {endPos = document.message_.length();};
-							title = document.message_.substring(startPos + 6, endPos);};
-							report.write("\tAccounting -- author = '");
-							report.write(author);
-							report.write("' -- title = '");
-							report.write(title);
-							report.write("'\n");
-							report.write(">>> Postscript job delivered.\n\n");
-							report.flush();
+					writeAuthorTitle(document, report, author, title);
 				} else {
 					title = "ASCII DOCUMENT";
 					if (document.message_.length() >= 16) {
@@ -314,6 +298,29 @@ Therefore #receiver sends a packet across the token ring network, until either
 			};
 			return false;
 		}
+	}
+
+	private void writeAuthorTitle(Packet document, Writer report, String author, String title) throws IOException {
+		int startPos;
+		int endPos;
+		startPos = document.message_.indexOf("author:");
+		if (startPos >= 0) {
+			endPos = document.message_.indexOf(".", startPos + 7);
+			if (endPos < 0) {endPos = document.message_.length();};
+			author = document.message_.substring(startPos + 7, endPos);};
+			startPos = document.message_.indexOf("title:");
+			
+			if (startPos >= 0) {
+				endPos = document.message_.indexOf(".", startPos + 6);
+				if (endPos < 0) {endPos = document.message_.length();};
+				title = document.message_.substring(startPos + 6, endPos);};
+				report.write("\tAccounting -- author = '");
+				report.write(author);
+				report.write("' -- title = '");
+				report.write(title);
+				report.write("'\n");
+				report.write(">>> Postscript job delivered.\n\n");
+				report.flush();
 	}
 
 	/**
