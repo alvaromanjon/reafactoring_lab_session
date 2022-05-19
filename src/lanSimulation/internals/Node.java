@@ -19,6 +19,8 @@
  */
 package lanSimulation.internals;
 
+import lanSimulation.Network;
+
 /**
 A <em>Node</em> represents a single Node in a Local Area Network (LAN).
 Several types of Nodes exist.
@@ -73,5 +75,22 @@ Construct a <em>Node</em> with given #type and #name, and which is linked to #ne
 		name_ = name;
 		nextNode_ = nextNode;
 	}
+	
+	public void printOn(StringBuffer buf) {
+		buf.append("Printer ");
+		buf.append(name_);
+		buf.append(" [Printer]");
+	}
 
+	public void printHTMLOn(StringBuffer buf) {
+		buf.append("Node ");
+		buf.append(name_);
+		buf.append(" [Node]");
+	}
+	
+	public void printXMLOn(StringBuffer buf) {
+		buf.append("<node>");
+		buf.append(name_);
+		buf.append("</node>");
+	}
 }
