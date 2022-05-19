@@ -77,9 +77,9 @@ Construct a <em>Node</em> with given #type and #name, and which is linked to #ne
 	}
 	
 	public void printOn(StringBuffer buf) {
-		buf.append("Printer ");
+		buf.append("Node ");
 		buf.append(name_);
-		buf.append(" [Printer]");
+		buf.append(" [Node]");
 	}
 
 	public void printHTMLOn(StringBuffer buf) {
